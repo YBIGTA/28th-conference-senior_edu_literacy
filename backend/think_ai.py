@@ -25,6 +25,8 @@ Flask 메인 서버 (라우팅 전담)
     UPSTAGE_API_KEY   업스테이지 API 키
 """
 
+from pathlib import Path
+import sys
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from dotenv import load_dotenv
@@ -43,10 +45,14 @@ import threading
 import subprocess
 import time
 
-# .env에서 API 키 로드
-load_dotenv()
+BASE_DIR = Path(__file__).resolve().parent.parent
+BACKEND_DIR = Path(__file__).resolve().parent
+FRONTEND_DIR = BASE_DIR / "frontend"
 
-app = Flask(__name__)
+# .env에서 API 키 로드
+load_dotenv(dotenv_path=BASE_DIR / ".env")
+
+app = Flask(__name__, static_folder=str(FRONTEND_DIR), template_folder=str(FRONTEND_DIR))
 # 한글 깨지지 않도록
 app.config["JSON_AS_ASCII"] = False
 CORS(app)
@@ -61,10 +67,10 @@ init_db()
 def update_news():
     """매일 자정에 뉴스 갱신 (fetch → clean → split → summarize)"""
     print("🔄 뉴스 자동 갱신 시작...")
-    subprocess.run(["python", "fetch_news.py"])
-    subprocess.run(["python", "news_cleaner.py"])
-    subprocess.run(["python", "paragraph_splitter.py"])
-    subprocess.run(["python", "summarize_news.py"])  # 정답 요약 사전 생성
+    subprocess.run([sys.executable, str(BACKEND_DIR / "fetch_news.py")], cwd=str(BASE_DIR), check=False)
+    subprocess.run([sys.executable, str(BACKEND_DIR / "news_cleaner.py")], cwd=str(BASE_DIR), check=False)
+    subprocess.run([sys.executable, str(BACKEND_DIR / "paragraph_splitter.py")], cwd=str(BASE_DIR), check=False)
+    subprocess.run([sys.executable, str(BACKEND_DIR / "summarize_news.py")], cwd=str(BASE_DIR), check=False)  # 정답 요약 사전 생성
 
     # 캐시 초기화 → 다음 추천 요청 시 새 파일 로드
     from recommend import _news_cache
@@ -87,11 +93,11 @@ threading.Thread(target=run_scheduler, daemon=True).start()
 
 @app.route("/")
 def home():
-    return send_from_directory(".", "index.html")
+    return send_from_directory(str(FRONTEND_DIR), "index.html")
 
 @app.route("/<path:path>")
 def static_files(path):
-    return send_from_directory(".", path)
+    return send_from_directory(str(FRONTEND_DIR), path)
 
 
 # ============================================================

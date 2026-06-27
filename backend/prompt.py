@@ -1,8 +1,11 @@
 import os
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 def _load_news_full():
-    path = "selected_news.txt"
-    if os.path.exists(path):
+    path = BASE_DIR / "selected_news.txt"
+    if path.exists():
         with open(path, "r", encoding="utf-8") as f:
             return f.read()
     # 파일 없으면 예시 사용

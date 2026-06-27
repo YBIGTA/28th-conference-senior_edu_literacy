@@ -34,32 +34,35 @@
 ## 파일 구조
 
 ```
-edu_data/
+edu_data-ieum/
+├── backend/
+│   ├── think_ai.py           # Flask 메인 서버 (라우팅 전담, 자동 뉴스 갱신 스케줄러 포함)
+│   ├── recommend.py          # 추천 로직 (SBERT 코사인 유사도, JSON 캐시 로드)
+│   ├── test_scoring_hcx.py   # 요약 채점 (KoBART 정답 요약 생성 + Clova HCX 검증·채점)
+│   ├── ai_client.py          # AI 엔진 통합 호출 (Groq / 업스테이지 / Clova / Gemini)
+│   ├── database.py           # PostgreSQL DB 관리 (users, study_logs)
+│   ├── prompt.py             # AI 프롬프트 관리 (질문 생성·대화 규칙)
+│   ├── fetch_news.py         # 교육부 보도자료 API 호출 (350자 미만 필터링 포함)
+│   ├── news_cleaner.py       # 보도자료 특수문자·자음 제거
+│   ├── paragraph_splitter.py # Clova Segmentation API로 뉴스 문단 분리
+│   ├── summarize_news.py     # KoBART + Clova HCX로 정답 요약 사전 생성 (채점 속도 향상용)
+│   └── embedding.py          # 에듀넷 SBERT 임베딩 사전 생성 (최초 1회, 350자 이하 필터링)
 │
-├── think_ai.py           # Flask 메인 서버 (라우팅 전담, 매일 00:00 뉴스 자동 갱신 스케줄러 내장)
-├── recommend.py          # 추천 로직 (SBERT 코사인 유사도, JSON 캐시 로드)
-├── test_scoring_hcx.py   # 요약 채점 (KoBART 정답 요약 생성 + Clova HCX 검증·채점)
-├── ai_client.py          # AI 엔진 통합 호출 (Groq / 업스테이지 / Clova / Gemini)
-├── database.py           # SQLite DB 관리 (users, study_logs)
-├── prompt.py             # AI 프롬프트 관리 (질문 생성·대화 규칙)
-│
-├── fetch_news.py         # 교육부 보도자료 API 호출 (350자 미만 필터링 포함)
-├── news_cleaner.py       # 보도자료 특수문자·자음 제거
-├── paragraph_splitter.py # Clova Segmentation API로 뉴스 문단 분리
-├── summarize_news.py     # KoBART + Clova HCX로 정답 요약 사전 생성 (채점 속도 향상용)
-├── embedding.py          # 에듀넷 SBERT 임베딩 사전 생성 (최초 1회, 350자 이하 필터링)
-│
-├── index.html            # 프론트엔드 화면
-├── script.js             # 프론트엔드 동작 (API 요청, 달력, 단어장, localStorage 로그인 유지)
-├── Procfile              # Railway 배포 시작 명령어
-├── requirements.txt      # 패키지 목록
+├── frontend/
+│   ├── index.html            # 프론트엔드 화면
+│   └── script.js             # 프론트엔드 동작 (API 요청, 달력, 단어장, localStorage 로그인 유지)
 │
 ├── data/
+│   ├── edunet_data.csv
 │   ├── edunet_filtered.csv          # 필터링된 에듀넷 자료 (350자 이상)
 │   ├── edunet_embeddings.npy        # 에듀넷 SBERT 임베딩 벡터 (사전 계산)
+│   ├── news_data.json               # 수집된 뉴스 원본 데이터
+│   ├── news_data_cleaned.json       # 정제된 뉴스 데이터
 │   └── news_data_paragraphs.json    # 문단 분리 + 사전 요약 포함 보도자료
 │
-└── users.db              # SQLite DB (사용자 정보 + 학습 기록)
+├── Procfile                 # Railway 배포 시작 명령어
+├── requirements.txt         # 패키지 목록
+└── .env                      # API 키 환경변수
 ```
 
 ---
@@ -115,22 +118,22 @@ CLOVA_ENDPOINT=Clova_HCX_엔드포인트
 ### 3. 에듀넷 임베딩 생성 (최초 1회)
 
 ```bash
-python embedding.py
+python backend/embedding.py
 ```
 
 ### 4. 뉴스 데이터 준비 (매일 1회 / 서버에서는 자동 실행)
 
 ```bash
-python fetch_news.py        # 어제~오늘 보도자료 수집 (350자 미만 필터링)
-python news_cleaner.py      # 특수문자·자음 제거
-python paragraph_splitter.py # Clova로 문단 분리 (약 3분 소요)
-python summarize_news.py    # KoBART + Clova로 정답 요약 사전 생성
+python backend/fetch_news.py        # 어제~오늘 보도자료 수집 (350자 미만 필터링)
+python backend/news_cleaner.py      # 특수문자·자음 제거
+python backend/paragraph_splitter.py # Clova로 문단 분리 (약 3분 소요)
+python backend/summarize_news.py    # KoBART + Clova로 정답 요약 사전 생성
 ```
 
 ### 5. 서버 실행
 
 ```bash
-python think_ai.py
+python backend/think_ai.py
 ```
 
 브라우저에서 `http://127.0.0.1:5001` 접속
