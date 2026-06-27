@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>생각이음</title>
+    <style>
+        body { font-family: 'Pretendard', sans-serif; background: #f8f9fa; padding: 20px; font-size: 20px; color: #333; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .nav-bar { display: none; justify-content: space-between; margin-bottom: 30px; padding-bottom: 15px; border-bottom: 2px solid #eee; }
+        .nav-link { font-size: 18px; color: #666; cursor: pointer; text-decoration: underline; }
+        input, textarea, select { width: 100%; padding: 15px; font-size: 18px; border: 1px solid #ddd; border-radius: 10px; margin-bottom: 20px; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; font-size: 22px; cursor: pointer; border-radius: 10px; border: none; margin-top: 10px; transition: 0.2s; font-weight: bold; }
+        .btn-main { background: #007bff; color: white; }
+        .btn-main:hover { background: #0056b3; }
+        .btn-score { background: #28a745; color: white; margin-top: 20px; }
+        .btn-sub { background: #e9ecef; color: #495057; }
+        .interest-group { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 25px; }
+        .interest-chip { padding: 10px 20px; border: 2px solid #ddd; border-radius: 30px; cursor: pointer; font-size: 18px; background: white; transition: 0.2s; }
+        .interest-chip.selected { background: #007bff; color: white; border-color: #007bff; }
+        .news-list { list-style: none; padding: 0; }
+        .news-item { background: #f1f3f5; padding: 20px; border-radius: 12px; margin-bottom: 15px; cursor: pointer; transition: 0.2s; border-left: 5px solid #6c757d; }
+        .news-item:hover { background: #e2e6ea; transform: translateX(5px); border-left-color: #007bff; }
+        .news-item h3 { margin: 0 0 5px 0; font-size: 22px; }
+        .news-item p { margin: 0; font-size: 16px; color: #666; }
+        #news-content { line-height: 1.8; background: #fff; padding: 25px; border: 1px solid #ddd; border-radius: 10px; min-height: 200px; white-space: pre-wrap; font-size: 22px; }
+        .chat-container { margin-top: 30px; border: 1px solid #dee2e6; border-radius: 15px; background: #f8f9fa; padding: 20px; }
+        .chat-box { max-height: 300px; overflow-y: auto; margin-bottom: 15px; padding: 10px; display: flex; flex-direction: column; gap: 10px; }
+        .chat-message { padding: 12px 18px; border-radius: 15px; max-width: 80%; font-size: 18px; line-height: 1.5; }
+        .chat-message.ai { background: #eef6ff; align-self: flex-start; border-left: 5px solid #007bff; }
+        .chat-message.user { background: #ffe3e3; align-self: flex-end; }
+        .result-section { margin-top: 30px; padding: 20px; border-radius: 15px; display: none; }
+        #score-result { background: #fff9db; border-left: 8px solid #fcc419; white-space: pre-wrap; }
+        #tooltip { position: absolute; display: none; background: white; border: 2px solid #007bff; padding: 15px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); z-index: 100; max-width: 250px; }
+        .page { display: none; }
+        .active { display: block; }
+        .step-divider { border: 0; border-top: 2px solid #eee; margin: 40px 0 30px; }
+
+
+        /* 학습 달력 */
+        .calendar-grid { display: grid; grid-template-columns: 40px repeat(31, 18px); gap: 3px; font-size: 13px; overflow-x: auto; }
+        .cal-month-label { color: #666; line-height: 18px; font-size: 14px; }
+        .cal-day { width: 18px; height: 18px; border-radius: 3px; background: #e9ecef; }
+        .cal-day.studied { background: #40c057; }
+        .cal-day.today { outline: 2px solid #007bff; }
+        .cal-day.today { outline: 2px solid #007bff; }
+
+        /* 성별 버튼 선택 스타일 */
+        .gender-selected { background: #007bff !important; color: white !important; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="main-nav" class="nav-bar">
+        <span class="nav-link" onclick="showPage('news-list-page')">추천 뉴스 목록</span>
+        <span class="nav-link" onclick="showPage('mypage')">마이페이지</span>
+        <span class="nav-link" onclick="handleLogout()">로그아웃</span>
+    </div>
+
+    <!-- 로그인 화면 -->
+    <div id="start-page" class="page active">
+        <h1 style="text-align: center; margin-bottom: 40px;">
+            <span class="wave" style="animation-delay: 0s">생각이음💭</span>
+        </h1>
+        <div style="margin-bottom: 30px;">
+            <label><strong>아이디 (이메일)</strong></label>
+            <input type="text" id="login-id" placeholder="이메일 주소를 입력해주세요">
+            <label><strong>비밀번호</strong></label>
+            <input type="password" id="login-pw" placeholder="비밀번호를 입력해주세요">
+            <button class="btn-main" onclick="handleLogin()">로그인하고 시작하기</button>
+        </div>
+        <hr style="border: 0; height: 1px; background: #ccc; margin: 30px 0;">
+        <p style="text-align: center; font-size: 18px; color: #666;">처음 오셨나요? 아래 버튼을 눌러 회원가입을 해주세요.</p>
+        <button class="btn-sub" onclick="showPage('register-page')">새로 회원가입 하기</button>
+    </div>
+
+    <!-- 회원가입 화면 -->
+    <div id="register-page" class="page">
+        <h1>회원가입 (정보 입력)</h1>
+        <p style="color: #666; margin-bottom: 30px;">회원가입을 위해 아래 정보를 입력해주세요.</p>
+
+        <label><strong>이메일 (아이디)</strong></label>
+        <input type="email" id="reg-email" placeholder="이메일 주소를 입력해주세요">
+
+        <label><strong>비밀번호</strong></label>
+        <input type="password" id="reg-pw" placeholder="비밀번호를 입력해주세요">
+
+        <label><strong>이름</strong></label>
+        <input type="text" id="reg-name" placeholder="성함을 입력해주세요">
+
+        <label><strong>성별</strong></label>
+        <input type="hidden" id="reg-gender" value="">
+        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <button type="button" id="gender-male" class="btn-sub"
+                style="flex: 1; font-size: 18px; padding: 15px; border-radius: 10px;"
+                onclick="selectGender('남성')">남성</button>
+            <button type="button" id="gender-female" class="btn-sub"
+                style="flex: 1; font-size: 18px; padding: 15px; border-radius: 10px;"
+                onclick="selectGender('여성')">여성</button>
+        </div>
+
+        <label><strong>생년월일</strong></label>
+        <input type="date" id="reg-birth">
+
+
+
+        <label><strong>관심사 선택 (최소 1개 이상 골라주세요)</strong></label>
+        <div class="interest-group" id="interest-group">
+            <div class="interest-chip" onclick="toggleInterest(this)" data-value="정치">정치</div>
+            <div class="interest-chip" onclick="toggleInterest(this)" data-value="경제">경제</div>
+            <div class="interest-chip" onclick="toggleInterest(this)" data-value="사회">사회</div>
+            <div class="interest-chip" onclick="toggleInterest(this)" data-value="IT과학">IT/과학</div>
+            <div class="interest-chip" onclick="toggleInterest(this)" data-value="문화">문화</div>
+            <div class="interest-chip" onclick="toggleInterest(this)" data-value="국제">국제</div>
+            <div class="interest-chip" onclick="toggleInterest(this)" data-value="지역">지역</div>
+        </div>
+
+        <button class="btn-main" onclick="handleRegister()">가입 완료하고 뉴스 보러가기</button>
+        <button class="btn-sub" style="margin-top: 15px;" onclick="showPage('start-page')">취소하고 돌아가기</button>
+    </div>
+
+    <!-- 추천 뉴스 목록 -->
+    <div id="news-list-page" class="page">
+        <h1>📰 <span id="user-welcome-name"></span> 님의 오늘자 추천 뉴스</h1>
+        <p>선택하신 관심사를 바탕으로 준비한 오늘의 뉴스 5가지입니다. <br> 공부할 뉴스를 골라보세요!</p>
+        <ul class="news-list" id="recommended-news-list"></ul>
+    </div>
+
+    <!-- 기사 읽기 화면 -->
+    <div id="article-page" class="page">
+        <button class="btn-sub" style="width: auto; padding: 10px 20px; font-size: 16px; margin-bottom: 15px;" onclick="showPage('news-list-page')">⬅️ 목록으로 돌아가기</button>
+        <h2 id="current-article-title">뉴스 제목</h2>
+        <p style="font-size: 16px; color: #007bff; margin-top: -10px;">💡 모르는 단어를 <strong>마우스로 드래그</strong>하면 단어 뜻을 알려드려요!</p>
+        <div id="news-content">뉴스를 불러오는 중입니다...</div>
+
+        <hr class="step-divider">
+        <div id="input-section">
+            <h3>1단계 — 오늘의 뉴스 요약 연습</h3>
+            <p style="font-size: 16px; color: #666; margin-top: -10px;">기사를 다 읽으셨나요? 핵심 내용을 자기 말로 요약해 적어주세요.</p>
+            <textarea id="user-summary" style="height:120px;" placeholder="여기에 뉴스 요약본을 적어주세요."></textarea>
+            <button class="btn-score" onclick="submitSummary()">요약 피드백 받기</button>
+        </div>
+
+        <div id="score-result" class="result-section"></div>
+
+        <div class="chat-container" id="chat-section" style="display: none;">
+            <h3>2단계 — 생각 잇기</h3>
+            <p style="font-size: 16px; color: #666; margin-top: -10px;">피드백 결과를 바탕으로 더 깊이 생각해봐요.</p>
+            <div class="chat-box" id="chat-box"></div>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="chat-input" placeholder="질문이나 생각을 여기에 입력한 후 보내기를 누르세요" style="margin-bottom: 0;" onkeypress="if(event.keyCode==13) sendChatMessage()">
+                <button class="btn-main" style="width: 120px; margin-top: 0; font-size: 18px;" onclick="sendChatMessage()">보내기</button>
+            </div>
+        </div>
+
+        <!-- 하단 이동 버튼 (채점 완료 후 표시) -->
+        <div id="bottom-nav" style="display: none; margin-top: 40px;">
+            <hr style="border: 0; border-top: 2px solid #eee; margin-bottom: 30px;">
+            <div style="display: flex; gap: 15px;">
+                <button class="btn-main" style="flex: 1;" onclick="showPage('news-list-page')">목록으로 돌아가기</button>
+                <button class="btn-sub" style="flex: 1;" onclick="showPage('mypage')">👤 마이페이지 보기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 마이페이지 -->
+    <div id="mypage" class="page">
+        <h1>나의 학습 강의실</h1>
+        <p><span class="user-profile-name"></span> 님이 그동안 열심히 공부한 기록입니다.</p>
+
+        <!-- 학습 달력 -->
+        <div style="margin-top: 30px;">
+            <h3>📅 올해 학습 기록</h3>
+            <div id="study-calendar" style="margin-top: 15px;"></div>
+        </div>
+
+        <!-- 단어장 -->
+        <div style="margin-top: 35px;">
+            <h3>단어장</h3>
+            <div id="word-list" style="margin-top: 15px;"></div>
+        </div>
+    </div>
+</div>
+
+<div id="tooltip">
+    <strong id="word-title" style="color:#007bff; font-size:22px;"></strong>
+    <p id="word-desc" style="margin-top:5px;"></p>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
