@@ -1,6 +1,10 @@
 import json
 import re
 import os
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+DATA_DIR = BASE_DIR / "data"
 
 def is_single_consonant(text):
     # 한글 자음 한 글자인지 확인 (예: ㅇ, ㄱ, ㄴ 등)
@@ -11,8 +15,8 @@ def split_by_special(text):
     return [text]
 
 def clean_news():
-    input_path = os.path.join('data', 'news_data.json')
-    output_path = os.path.join('data', 'news_data_cleaned.json')
+    input_path = DATA_DIR / 'news_data.json'
+    output_path = DATA_DIR / 'news_data_cleaned.json'
     with open(input_path, 'r', encoding='utf-8') as f:
         news_list = json.load(f)
     cleaned_list = []

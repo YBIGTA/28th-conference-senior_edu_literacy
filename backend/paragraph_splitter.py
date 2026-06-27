@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*-
 import json
 import os
+from pathlib import Path
 import http.client
 from dotenv import load_dotenv
 
+BASE_DIR = Path(__file__).resolve().parent.parent
+DATA_DIR = BASE_DIR / "data"
+
 # .env 파일 읽기
-load_dotenv()
+load_dotenv(dotenv_path=BASE_DIR / ".env")
 
 class CompletionExecutor:
     def __init__(self, host, api_key, request_id):
@@ -82,8 +86,7 @@ if __name__ == '__main__':
         print("🚨 에러: .env 파일에서 CLOVA_API_KEY를 찾을 수 없습니다!")
         exit(1)
 
-    data_dir = 'data'
-    news_json_path = os.path.join(data_dir, 'news_data_cleaned.json')
-    para_json_path = os.path.join(data_dir, 'news_data_paragraphs.json')
+    news_json_path = DATA_DIR / 'news_data_cleaned.json'
+    para_json_path = DATA_DIR / 'news_data_paragraphs.json'
     
     split_paragraphs(news_json_path, para_json_path, CLOVA_API_KEY, REQUEST_ID)

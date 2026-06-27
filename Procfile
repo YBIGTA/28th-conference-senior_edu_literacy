@@ -1,1 +1,1 @@
-web: python think_ai.py
+web: python backend/think_ai.py

@@ -21,12 +21,16 @@ recommendaton algorithm
     4. 합쳐서 5개 반환
 """
 
+from pathlib import Path
 import numpy as np
 import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
 from sentence_transformers import SentenceTransformer
 from fetch_news import get_clean_news
 import json
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+DATA_DIR = BASE_DIR / "data"
 
 # ============================================================
 # 앱 시작 시 1회 로드
@@ -39,9 +43,9 @@ print("Loading edunet Model...")
 print("Loading edunet data...")
 try:
     # edunet_filtered.csv: embedding.py 실행 시 생성된 필터링된 에듀넷 자료
-    _EDUNET_DF   = pd.read_csv("data/edunet_filtered.csv", encoding="utf-8-sig").fillna("")
+    _EDUNET_DF   = pd.read_csv(DATA_DIR / "edunet_filtered.csv", encoding="utf-8-sig").fillna("")
     # edunet_embeddings.npy: 각 에듀넷 자료의 SBERT 임베딩 벡터를 미리 계산해둔 파일
-    _EDUNET_VECS = np.load("data/edunet_embeddings.npy")
+    _EDUNET_VECS = np.load(DATA_DIR / "edunet_embeddings.npy")
     print(f"successfully loading edunet data ({len(_EDUNET_DF)}개)")
 
 except FileNotFoundError:
@@ -69,7 +73,7 @@ def _refresh_news():
     if _news_cache:
         return
 
-    json_path = "data/news_data_paragraphs.json"
+    json_path = DATA_DIR / "news_data_paragraphs.json"
     try:
         import json as _json
         with open(json_path, 'r', encoding='utf-8') as f:

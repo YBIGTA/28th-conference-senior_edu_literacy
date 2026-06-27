@@ -1,13 +1,18 @@
 import os
+from pathlib import Path
 import numpy as np
 import pandas as pd
 from sentence_transformers import SentenceTransformer
 
+BASE_DIR = Path(__file__).resolve().parent.parent
+DATA_DIR = BASE_DIR / "data"
+DATA_DIR.mkdir(exist_ok=True)
+
 print("1. 원본 데이터 불러오기 및 필터링 중...")
 try:
-    df = pd.read_csv('data/edunet_data.csv', encoding='utf-8-sig')
+    df = pd.read_csv(DATA_DIR / 'edunet_data.csv', encoding='utf-8-sig')
 except FileNotFoundError:
-    print("❌ 'data/edunet_data.csv' 파일을 찾을 수 없습니다.")
+    print(f"❌ '{DATA_DIR / 'edunet_data.csv'}' 파일을 찾을 수 없습니다.")
     exit()
 
 # 결측치 빈 문자열로 처리
@@ -37,11 +42,11 @@ model = SentenceTransformer('snunlp/KR-SBERT-V40K-klueNLI-augSTS')
 edunet_vecs = model.encode(combined_texts)
 
 print("\n3. 분석 결과 저장 중...")
-os.makedirs('data', exist_ok=True)
+DATA_DIR.mkdir(exist_ok=True)
 
 # ⭐️ 중요: 필터링되어 순서가 맞춰진 데이터프레임도 새로 저장해야 합니다.
-df.to_csv('data/edunet_filtered.csv', index=False, encoding='utf-8-sig')
-np.save('data/edunet_embeddings.npy', edunet_vecs)
+df.to_csv(DATA_DIR / 'edunet_filtered.csv', index=False, encoding='utf-8-sig')
+np.save(DATA_DIR / 'edunet_embeddings.npy', edunet_vecs)
 
 print("✅ 성공! 'edunet_filtered.csv'와 'edunet_embeddings.npy'가 생성되었습니다.")
 print("이제 추천 프로그램(2번 파일)을 실행할 수 있습니다.")

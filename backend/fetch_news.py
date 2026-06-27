@@ -1,9 +1,15 @@
 import os
+from pathlib import Path
 import requests
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from bs4 import BeautifulSoup
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+DATA_DIR = BASE_DIR / "data"
+
+load_dotenv(dotenv_path=BASE_DIR / ".env")
 
 def text_cleaner(text):
     ### 본문에서 HTML 태그 제거
@@ -13,7 +19,6 @@ def text_cleaner(text):
     return soup.get_text(strip=True)
 
 def get_clean_news():
-    load_dotenv()
     service_key = os.getenv('news_api')
 
     if not service_key:
